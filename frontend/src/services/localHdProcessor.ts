@@ -1,9 +1,24 @@
 ﻿import * as ort from "onnxruntime-web";
 
-const WASM_BASE = import.meta.env.BASE_URL || './';
-ort.env.wasm.wasmPaths = WASM_BASE + 'ort/';
+// Detect base URL dynamically - works for both root and sub-path deployments
+const BASE = (() => {
+  const script = document.querySelector('script[src*="index-"]') as HTMLScriptElement | null;
+  if (script && script.src) {
+    // Extract the base path from the script URL: /idphoto/assets/index-xxx.js -> /idphoto/
+    const parts = script.src.split("/");
+    const assetIdx = parts.indexOf("assets");
+    if (assetIdx > 0) {
+      return parts.slice(0, assetIdx).join("/") + "/";
+    }
+  }
+  // Fallback to page pathname
+  const path = location.pathname;
+  return path.endsWith("/") ? path : path.substring(0, path.lastIndexOf("/") + 1);
+})();
 
-const MODEL_URL = WASM_BASE + "models/hivision_modnet.onnx";
+ort.env.wasm.wasmPaths = BASE + "ort/";
+
+const MODEL_URL = BASE + "models/hivision_modnet.onnx";
 const INPUT_SIZE = 512;
 
 let session: ort.InferenceSession | null = null;
@@ -88,7 +103,6 @@ function smartCropAndResize(
   targetW: number,
   targetH: number
 ): void {
-  // Match server-side smart_crop: crop to target ratio, then resize
   const targetRatio = targetW / targetH;
   let cropW: number, cropH: number;
   if (origW / origH > targetRatio) {
@@ -101,14 +115,12 @@ function smartCropAndResize(
   const left = Math.round((origW - cropW) / 2);
   const top = Math.round((origH - cropH) / 2);
 
-  // Extract the crop region and resize directly to target
   const tempCanvas = document.createElement("canvas");
   tempCanvas.width = cropW;
   tempCanvas.height = cropH;
   const tCtx = tempCanvas.getContext("2d")!;
   tCtx.drawImage(ctx.canvas, left, top, cropW, cropH, 0, 0, cropW, cropH);
 
-  // Resize to target
   ctx.canvas.width = targetW;
   ctx.canvas.height = targetH;
   ctx.drawImage(tempCanvas, 0, 0, cropW, cropH, 0, 0, targetW, targetH);
@@ -190,9 +202,9 @@ export async function processLocalHD(
   const fCtx = finalCanvas.getContext("2d")!;
   fCtx.fillStyle = backgroundColor;
   fCtx.fillRect(0, 0, widthPx, heightPx);
-  fCtx.filter = 'brightness(1.08) contrast(1.04)';
-        fCtx.drawImage(resultCanvas, 0, 0, widthPx, heightPx);
-        fCtx.filter = 'none';
+  fCtx.filter = "brightness(1.08) contrast(1.04)";
+  fCtx.drawImage(resultCanvas, 0, 0, widthPx, heightPx);
+  fCtx.filter = "none";
 
   const dataUrl = finalCanvas.toDataURL("image/png");
   if (!dataUrl || dataUrl === "data:," || dataUrl.length < 100) {
