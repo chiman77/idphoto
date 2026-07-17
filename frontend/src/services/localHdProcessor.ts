@@ -5,7 +5,12 @@ const BASE = (() => {
   const path = location.pathname;
   return path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1);
 })();
-ort.env.wasm.wasmPaths = BASE + "ort/";
+ort.env.wasm.numThreads = 1;
+// Explicitly use basic WASM backend (not JSEP) for GitHub Pages compatibility
+ort.env.wasm.wasmPaths = {
+  mjs: BASE + 'ort/ort-wasm-simd-threaded.mjs',
+  wasm: BASE + 'ort/ort-wasm-simd-threaded.wasm',
+};
 
 const MODEL_URL = BASE + "models/hivision_modnet.onnx";
 const INPUT_SIZE = 512;
@@ -201,5 +206,6 @@ export async function processLocalHD(
   }
   return dataUrl;
 }
+
 
 
