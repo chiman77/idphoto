@@ -48,7 +48,10 @@ export const useStore = create<AppState>((set) => ({
   backgroundColor: "#FFFFFF",
   setBackgroundColor: (color) => set({ backgroundColor: color }),
 
-  processMode: "server",
+  processMode: typeof window !== 'undefined' &&
+    (window.location.hostname === 'chiman77.github.io' ||
+     window.location.hostname.endsWith('.github.io'))
+  ? 'localhd' : 'server',
   setProcessMode: (mode) => set({ processMode: mode }),
 
   isProcessing: false,
@@ -69,3 +72,4 @@ export const useStore = create<AppState>((set) => ({
       selectedSpec: null,
     }),
 }));
+

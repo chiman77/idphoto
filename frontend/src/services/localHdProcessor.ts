@@ -2,20 +2,9 @@
 
 // Detect base URL dynamically - works for both root and sub-path deployments
 const BASE = (() => {
-  const script = document.querySelector('script[src*="index-"]') as HTMLScriptElement | null;
-  if (script && script.src) {
-    // Extract the base path from the script URL: /idphoto/assets/index-xxx.js -> /idphoto/
-    const parts = script.src.split("/");
-    const assetIdx = parts.indexOf("assets");
-    if (assetIdx > 0) {
-      return parts.slice(0, assetIdx).join("/") + "/";
-    }
-  }
-  // Fallback to page pathname
   const path = location.pathname;
-  return path.endsWith("/") ? path : path.substring(0, path.lastIndexOf("/") + 1);
+  return path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1);
 })();
-
 ort.env.wasm.wasmPaths = BASE + "ort/";
 
 const MODEL_URL = BASE + "models/hivision_modnet.onnx";
@@ -212,3 +201,5 @@ export async function processLocalHD(
   }
   return dataUrl;
 }
+
+

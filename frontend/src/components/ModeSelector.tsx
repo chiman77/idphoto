@@ -3,13 +3,21 @@
 export default function ModeSelector() {
   const { processMode, setProcessMode } = useStore();
 
+  // Detect if running on static hosting (no backend API available)
+  const isStatic = typeof window !== "undefined" &&
+    (window.location.hostname === "chiman77.github.io" ||
+     window.location.hostname.endsWith(".github.io"));
+
   return (
     <div>
       <label className="card-title">处理方式</label>
       <div className="flex gap-3">
         <button
-          onClick={() => setProcessMode("server")}
-          className={"mode-btn " + (processMode === "server" ? "mode-btn-active" : "mode-btn-inactive")}
+          onClick={() => !isStatic && setProcessMode("server")}
+          disabled={isStatic}
+          className={"mode-btn " + (processMode === "server" ? "mode-btn-active" : "mode-btn-inactive") +
+            (isStatic ? " opacity-50 cursor-not-allowed" : "")}
+          title={isStatic ? "GitHub Pages 不支持服务端模式，需部署后端 API" : ""}
         >
           <div className="text-lg mb-1">
             <svg className="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -17,10 +25,16 @@ export default function ModeSelector() {
             </svg>
           </div>
           <div className="font-semibold">在线精修</div>
-          <div className="text-[10px] opacity-75 mt-0.5">画质更锐利</div>
+          <div className="text-[10px] opacity-75 mt-0.5">
+            {isStatic ? "需部署后端" : "画质更锐利"}
+          </div>
         </button>
         <button
-          onClick={() => setProcessMode("localhd")}
+          onClick={() => {
+            setProcessMode("localhd");
+            // Auto-switch to localhd on static hosting
+            if (isStatic && processMode === "server") setProcessMode("localhd");
+          }}
           className={"mode-btn " + (processMode === "localhd" ? "mode-btn-active" : "mode-btn-inactive")}
         >
           <div className="text-lg mb-1">
