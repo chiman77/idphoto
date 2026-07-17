@@ -1,8 +1,9 @@
-import * as ort from "onnxruntime-web";
+﻿import * as ort from "onnxruntime-web";
 
-ort.env.wasm.wasmPaths = "/ort/";
+const WASM_BASE = import.meta.env.BASE_URL || './';
+ort.env.wasm.wasmPaths = WASM_BASE + 'ort/';
 
-const MODEL_URL = "/models/hivision_modnet.onnx";
+const MODEL_URL = WASM_BASE + "models/hivision_modnet.onnx";
 const INPUT_SIZE = 512;
 
 let session: ort.InferenceSession | null = null;
