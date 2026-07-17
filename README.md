@@ -78,7 +78,6 @@ idphoto/
 ├── frontend/                # React + Vite 前端
 │   ├── public/
 │   │   ├── ort/            # ONNX Runtime WASM 文件
-│   │   ├── mediapipe/      # MediaPipe 文件（已弃用）
 │   │   ├── models/         # ONNX 模型权重
 │   │   └── icon-*.png      # PWA 图标
 │   ├── src/
