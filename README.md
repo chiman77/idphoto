@@ -39,69 +39,73 @@ pip install -r requirements.txt
 python -m uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-> ⚠️ 首次运行会自动下载 hivision_modnet 模型权重（约 24.7MB）。
+### 一键启动（开发模式）
 
-> 如果 rembg 下载模型遇到网络问题，可手动将权重文件 `hivision_modnet.onnx` 放到 `backend/models/weights/` 目录。
+双击 `start.bat`，自动安装依赖并启动完整服务（前端+后端），访问 http://localhost:3000。
 
-## 📦 部署到 GitHub Pages
+## 📦 构建与部署
 
-### 前提条件
+### 构建独立可执行文件
 
-1. 将项目推送到 GitHub 仓库
-2. 在仓库 Settings → Pages 中，Source 选择 "GitHub Actions"
+使用 PyInstaller 将整个应用打包为独立的 Windows 可执行文件：
 
-### 自动部署
+```bash
+# 安装构建工具
+pip install pyinstaller
 
-项目已包含 GitHub Actions 工作流文件 `.github/workflows/deploy.yml`，推送 `main` 分支后会自动：
+# 构建（包含前端静态文件和所有 Python 依赖）
+pyinstaller build_package.spec
 
-1. 安装前端依赖
-2. 复制 ONNX Runtime WASM 文件到生产目录
-3. 构建前端静态文件
-4. 部署到 GitHub Pages
+# 输出位于 dist/IDPhotoGenerator/
+# 直接双击 IDPhotoGenerator.exe 即可运行
+```
 
-### 后端部署
+### 构建 Windows 安装包
 
-"在线精修"模式需要后端支持，推荐以下平台：
+需要安装 [Inno Setup 6](https://jrsoftware.org/isdl.php)：
 
-| 平台 | 说明 |
-|------|------|
-| [Render](https://render.com) | 免费版支持 Web Service，部署 FastAPI 应用 |
-| [Railway](https://railway.app) | 简单配置，自动部署 |
-| [Fly.io](https://fly.io) | 全球边缘部署，延迟低 |
+```bash
+# 1. 先构建 PyInstaller 可执行文件
+pyinstaller build_package.spec
 
-部署后端后，更新 `frontend/src/services/apiClient.ts` 中的 `API_BASE` 为实际后端地址。
+# 2. 编译安装包
+iscc setup.iss
+
+# 输出位于 installer/IDPhotoGenerator_Setup_v1.0.0.exe (~430 MB)
+```
+
+### 一键构建
+
+双击 `build_installer.bat`，自动完成前端构建 → PyInstaller 打包 → Inno Setup 安装包编译。
+
+## 💻 系统要求
+
+- **运行环境**：Windows 10/11 64位
+- **内存**：推荐 4GB+
+- **磁盘空间**：安装包 ~430MB，安装后 ~800MB
+- **无需网络**：安装后完全离线可用
 
 ## 🏗️ 项目结构
 
 ```
-idphoto/
-├── frontend/                # React + Vite 前端
-│   ├── public/
-│   │   ├── ort/            # ONNX Runtime WASM 文件
-│   │   ├── models/         # ONNX 模型权重
-│   │   └── icon-*.png      # PWA 图标
-│   ├── src/
-│   │   ├── components/     # React 组件
-│   │   ├── services/       # API 和本地处理服务
-│   │   ├── store/          # Zustand 状态管理
-│   │   └── utils/          # 工具函数和数据
-│   └── vite.config.ts
-├── backend/                 # FastAPI 后端
-│   ├── routers/            # API 路由
-│   ├── services/           # 图片处理服务
-│   ├── models/             # 模型和规格数据
-│   └── main.py
-└── .github/workflows/      # GitHub Actions
+├── backend/               # Python 后端服务
+│   ├── main.py            # FastAPI 入口
+│   ├── routers/           # API 路由
+│   ├── services/          # 业务逻辑（抠图、换背景、裁剪）
+│   └── models/            # 模型定义
+├── frontend/              # React 前端
+│   ├── src/               # 源代码
+│   └── dist/              # 构建产物
+├── start_server.py        # 统一服务入口（前端+后端）
+├── build_package.spec     # PyInstaller 构建配置
+├── setup.iss              # Inno Setup 安装包脚本
+├── build_installer.bat    # 一键构建脚本
+├── start.bat              # 开发启动脚本
+└── docker-compose.yml     # Docker 部署
 ```
 
-## 🛠️ 技术栈
+## 🌐 在线版本
 
-- **前端**：React 18 + TypeScript + Vite + Tailwind CSS + Zustand
-- **后端**：Python FastAPI + ONNX Runtime + rembg
-- **抠图模型**：hivision_modnet（基于 MODNet 微调的证件照优化模型）
-- **本地处理**：ONNX Runtime Web（浏览器端 WASM 推理）
-- **PWA**：支持离线访问和移动端安装
+访问 [https://chiman77.github.io/idphoto/](https://chiman77.github.io/idphoto/) 使用在线版本。
 
-## 📄 许可
-
-MIT
+> 注：在线版本的"本地精修"模式需要下载模型文件（~25MB），首次加载较慢。

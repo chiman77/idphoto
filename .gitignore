@@ -3,10 +3,19 @@ frontend/node_modules
 backend/__pycache__
 backend/**/__pycache__
 backend/.pytest_cache
-backend/models/weights/*.onnx
 
 # Build
 frontend/dist
+dist/
+build/
+*.spec
+
+# Installer
+installer/
+*.iss
+
+# Model weights (too large for git)
+backend/models/weights/*.onnx
 
 # OS
 .DS_Store
@@ -19,3 +28,18 @@ Thumbs.db
 # Env
 .env
 *.env.local
+
+# Temp test files
+test_*.py
+test_*.png
+*.pyc
+__pycache__/
+
+# C# server binary (built from IDPhotoServer.cs)
+IDPhotoServer.exe
+
+# Lite distribution (copy of dist)
+dist-lite/
+
+# Zip files
+*.zip
