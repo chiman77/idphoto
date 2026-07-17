@@ -2,15 +2,17 @@
 
 // Detect base URL dynamically - works for both root and sub-path deployments
 // Use CDN for ONNX Runtime WASM files (faster globally)
-const WASM_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/';
-
 const BASE = (() => {
   const path = location.pathname;
   return path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1);
 })();
 ort.env.wasm.numThreads = 1;
-// Use jsDelivr CDN for ORT WASM (faster than GitHub Pages, especially from China)
-ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/";
+// Auto-detect: on GitHub Pages use CDN, locally use local files for speed
+if (window.location.hostname.includes('github.io')) {
+  ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/';
+} else {
+  ort.env.wasm.wasmPaths = BASE + 'ort/';
+}
 
 // Auto-detect: on GitHub Pages use raw.githubusercontent, otherwise use local
 const MODEL_URL = window.location.hostname.includes('github.io')
