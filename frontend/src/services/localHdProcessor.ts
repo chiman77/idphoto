@@ -12,7 +12,7 @@ ort.env.wasm.numThreads = 1;
 // Use jsDelivr CDN for ORT WASM (faster than GitHub Pages, especially from China)
 ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/";
 
-const MODEL_URL = "https://cdn.jsdelivr.net/gh/chiman77/idphoto@main/frontend/public/models/hivision_modnet.onnx";
+const MODEL_URL = BASE + "models/hivision_modnet.onnx";
 const INPUT_SIZE = 512;
 
 let session: ort.InferenceSession | null = null;
