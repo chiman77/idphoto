@@ -1,9 +1,9 @@
-﻿@echo off
+@echo off
 chcp 65001 >nul
-title 证件照生成器
+title ID Photo Generator
 
 echo ========================================
-echo   证件照生成器 - ID Photo Generator
+echo   ID Photo Generator - 证件照生成器
 echo ========================================
 echo.
 
@@ -12,7 +12,7 @@ cd /d "%~dp0"
 :: Check Python
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [错误] 未检测到 Python ^(需 3.10+^)
+    echo [ERROR] Python not found. Please install Python 3.10+
     pause
     exit /b 1
 )
@@ -21,28 +21,28 @@ if %errorlevel% neq 0 (
 if not exist "frontend\dist\index.html" (
     where node >nul 2>&1
     if %errorlevel% neq 0 (
-        echo [错误] 首次运行需要 Node.js
+        echo [ERROR] First run requires Node.js to build frontend
         pause
         exit /b 1
     )
-    echo [1/3] 安装前端依赖...
+    echo [1/3] Installing frontend dependencies...
     pushd frontend
     call npm install
     popd
-    echo [2/3] 构建前端...
+    echo [2/3] Building frontend...
     pushd frontend
     call npx vite build
     popd
 )
 
-echo [1/2] 检查后端依赖...
+echo [1/3] Checking backend dependencies...
 python -c "import fastapi, uvicorn, rembg" >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [安装] 安装后端依赖 ^(首次需下载模型^)...
+    echo [INSTALL] Installing backend dependencies...
     pip install -r backend\requirements.txt
 )
 
-echo [2/2] 启动服务...
+echo [2/3] Starting server...
 echo.
 
 :: Kill any existing server on port 3000
@@ -54,16 +54,16 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr :3000') do (
 start "" /B python start_server.py
 
 :: Wait for server to start
+echo [3/3] Waiting for server...
 timeout /t 3 /nobreak >nul
 
 :: Open browser
 start "" http://localhost:3000
 
 echo.
-echo   ✅ 服务已启动！
-echo   🌐 访问地址: http://localhost:3000
-echo   ❌ 关闭本窗口或按 Ctrl+C 停止服务
+echo   Server started!
+echo   Open: http://localhost:3000
+echo   Close this window to stop the server
 echo.
 
-:: Keep window open so user can close it to stop
 pause
