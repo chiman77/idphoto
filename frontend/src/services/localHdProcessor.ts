@@ -18,21 +18,31 @@ const INPUT_SIZE = 512;
 let session: ort.InferenceSession | null = null;
 let sessionLoading: Promise<ort.InferenceSession> | null = null;
 
+const LOAD_TIMEOUT = 60000; // 60 seconds timeout for model loading
+
 async function getSession(): Promise<ort.InferenceSession> {
   if (session) return session;
   if (sessionLoading) return sessionLoading;
   sessionLoading = (async () => {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('模型加载超时，请检查网络连接')), LOAD_TIMEOUT)
+    );
     try {
-      console.log("Loading hivision_modnet model for Local HD...");
-      const s = await ort.InferenceSession.create(MODEL_URL, {
-        executionProviders: ["wasm"],
-      });
-      console.log("Model loaded:", s.inputNames, "->", s.outputNames);
+      console.log('Loading hivision_modnet model for Local HD...');
+      console.log('Model URL:', MODEL_URL);
+      const s = await Promise.race([
+        ort.InferenceSession.create(MODEL_URL, {
+          executionProviders: ['wasm'],
+        }),
+        timeout
+      ]) as ort.InferenceSession;
+      console.log('Model loaded:', s.inputNames, '->', s.outputNames);
       session = s;
       return s;
-    } catch (err) {
+    } catch (err: any) {
       sessionLoading = null;
-      throw err;
+      console.error('Model loading failed:', err);
+      throw new Error('模型加载失败: ' + (err.message || err));
     }
   })();
   return sessionLoading;
@@ -206,6 +216,7 @@ export async function processLocalHD(
   }
   return dataUrl;
 }
+
 
 
 
