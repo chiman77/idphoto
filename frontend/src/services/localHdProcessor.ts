@@ -1,13 +1,16 @@
 ﻿import * as ort from "onnxruntime-web";
 
 // Detect base URL dynamically - works for both root and sub-path deployments
+// Use CDN for ONNX Runtime WASM files (faster globally)
+const WASM_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/';
+
 const BASE = (() => {
   const path = location.pathname;
   return path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1);
 })();
 ort.env.wasm.numThreads = 1;
-// Explicitly use basic WASM backend (not JSEP) for GitHub Pages compatibility
-ort.env.wasm.wasmPaths = BASE + "ort/";
+// Use jsDelivr CDN for ORT WASM (faster than GitHub Pages, especially from China)
+ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/";
 
 const MODEL_URL = BASE + "models/hivision_modnet.onnx";
 const INPUT_SIZE = 512;
@@ -15,14 +18,16 @@ const INPUT_SIZE = 512;
 let session: ort.InferenceSession | null = null;
 let sessionLoading: Promise<ort.InferenceSession> | null = null;
 
-const LOAD_TIMEOUT = 60000; // 60 seconds timeout for model loading
+// Increase timeout - first load downloads ~50MB (WASM + model) from GitHub Pages
+// On some connections this may take 2-3 minutes
+const LOAD_TIMEOUT = 180000; // 60 seconds timeout for model loading
 
 async function getSession(): Promise<ort.InferenceSession> {
   if (session) return session;
   if (sessionLoading) return sessionLoading;
   sessionLoading = (async () => {
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('模型加载超时，请检查网络连接')), LOAD_TIMEOUT)
+      setTimeout(() => reject(new Error('模型加载超时（3分钟），首次使用需下载约50MB文件，请确保网络通畅或在较好的网络环境下重试')), LOAD_TIMEOUT)
     );
     try {
       console.log('Loading hivision_modnet model for Local HD...');
@@ -213,6 +218,8 @@ export async function processLocalHD(
   }
   return dataUrl;
 }
+
+
 
 
 
