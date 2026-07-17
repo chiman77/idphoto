@@ -12,7 +12,10 @@ ort.env.wasm.numThreads = 1;
 // Use jsDelivr CDN for ORT WASM (faster than GitHub Pages, especially from China)
 ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/";
 
-const MODEL_URL = "https://raw.githubusercontent.com/chiman77/idphoto/main/frontend/public/models/hivision_modnet.onnx";
+// Auto-detect: on GitHub Pages use raw.githubusercontent, otherwise use local
+const MODEL_URL = window.location.hostname.includes('github.io')
+  ? 'https://raw.githubusercontent.com/chiman77/idphoto/main/frontend/public/models/hivision_modnet.onnx'
+  : BASE + 'models/hivision_modnet.onnx';
 const INPUT_SIZE = 512;
 
 let session: ort.InferenceSession | null = null;
@@ -20,7 +23,7 @@ let sessionLoading: Promise<ort.InferenceSession> | null = null;
 
 // Increase timeout - first load downloads ~50MB (WASM + model) from GitHub Pages
 // On some connections this may take 2-3 minutes
-const LOAD_TIMEOUT = 180000; // 60 seconds timeout for model loading
+const LOAD_TIMEOUT = 120000; // 60 seconds timeout for model loading
 
 async function getSession(): Promise<ort.InferenceSession> {
   if (session) return session;
