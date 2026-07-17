@@ -7,10 +7,7 @@ const BASE = (() => {
 })();
 ort.env.wasm.numThreads = 1;
 // Explicitly use basic WASM backend (not JSEP) for GitHub Pages compatibility
-ort.env.wasm.wasmPaths = {
-  mjs: BASE + 'ort/ort-wasm-simd-threaded.mjs',
-  wasm: BASE + 'ort/ort-wasm-simd-threaded.wasm',
-};
+ort.env.wasm.wasmPaths = BASE + "ort/";
 
 const MODEL_URL = BASE + "models/hivision_modnet.onnx";
 const INPUT_SIZE = 512;
@@ -216,6 +213,7 @@ export async function processLocalHD(
   }
   return dataUrl;
 }
+
 
 
 
